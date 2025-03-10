@@ -1,6 +1,6 @@
 {
   "name": "@ohd-tools/utils",
-  "version": "0.13.0",
+  "version": "0.13.1",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "type": "commonjs",
@@ -41,12 +41,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/afocommunity/OHD-RCON.git"
+    "url": "git+https://github.com/OHD-Tools/utils.git"
   },
   "bugs": {
-    "url": "https://github.com/afocommunity/OHD-RCON/issues"
+    "url": "https://github.com/OHD-Tools/utils/issues"
   },
-  "homepage": "https://github.com/afocommunity/OHD-RCON#readme",
+  "homepage": "https://github.com/OHD-Tools/utils#readme",
   "description": "Utilities for OHD-RCON",
   "dependencies": {
     "async": "^3.2.6",
@@ -56,16 +56,5 @@
     "basic-ftp": "^5.0.5",
     "ssh2-sftp-client": "^10.0.3",
     "tail": "^2.2.6"
-  },
-  "peerDependenciesMeta": {
-    "basic-ftp": {
-      "optional": true
-    },
-    "tail": {
-      "optional": true
-    },
-    "ssh2-sftp-client": {
-      "optional": true
-    }
   }
 }
