@@ -10,7 +10,8 @@ type TailLogReaderOptions = {
 };
 export default class TailLogReader {
   options: Partial<TailLogReaderOptions>;
-  reader: FTPTail;
+  reader!: FTPTail;
+  queueLine!: (data: any) => unknown;
   constructor(
     queueLine: (data: any) => unknown,
     options = {} as TailLogReaderOptions,
@@ -20,18 +21,20 @@ export default class TailLogReader {
 
     this.options = options;
 
-    this.reader = new FTPTail({
-      ftp: options.ftp,
-      fetchInterval: options.fetchInterval || 0,
-      maxTempFileSize: options.maxTempFileSize || 5 * 1000 * 1000, // 5 MB
-    } as any);
-
     if (typeof queueLine !== 'function')
       throw new Error(
         'queueLine argument must be specified and be a function.',
       );
+    this.queueLine = queueLine;
+  }
 
-    this.reader.on('line', queueLine);
+  async setup() {
+    this.reader = new FTPTail({
+      ftp: this.options.ftp,
+      fetchInterval: this.options.fetchInterval ?? 0,
+      maxTempFileSize: this.options.maxTempFileSize ?? 5 * 1000 * 1000, // 5 MB
+    } as any);
+    this.reader.on('line', this.queueLine);
   }
 
   async watch() {
