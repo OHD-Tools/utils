@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import path from 'path';
 import { SFTPTail, type SFTPTailOptions } from '../ftp-tail';
 
@@ -10,9 +11,9 @@ type TailLogReaderOptions = {
 };
 export default class TailLogReader {
   options: Partial<TailLogReaderOptions>;
-  reader: SFTPTail;
+  reader!: SFTPTail;
+  queueLine!: (data: any) => unknown;
   constructor(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     queueLine: (data: any) => unknown,
     options = {} as TailLogReaderOptions,
   ) {
@@ -21,19 +22,19 @@ export default class TailLogReader {
 
     this.options = options;
 
-    this.reader = new SFTPTail({
-      sftp: options.sftp,
-      fetchInterval: options.fetchInterval || 0,
-      maxTempFileSize: options.maxTempFileSize || 5 * 1000 * 1000, // 5 MB
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any);
-
     if (typeof queueLine !== 'function')
       throw new Error(
         'queueLine argument must be specified and be a function.',
       );
+  }
 
-    this.reader.on('line', queueLine);
+  async setup() {
+    this.reader = new SFTPTail({
+      sftp: this.options.sftp,
+      fetchInterval: this.options.fetchInterval ?? 0,
+      maxTempFileSize: this.options.maxTempFileSize ?? 5 * 1000 * 1000, // 5 MB
+    } as any);
+    this.reader.on('line', this.queueLine);
   }
 
   async watch() {

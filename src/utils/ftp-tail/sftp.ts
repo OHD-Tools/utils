@@ -1,38 +1,37 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import crypto from 'node:crypto';
 import EventEmitter from 'node:events';
 import fs, { PathLike } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import Client from 'ssh2-sftp-client';
 export type SFTPTailOptions = {
   sftp: {
     timeout: number;
     encoding: string;
     host: string;
     port: number;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     debug: any;
   };
   fetchInterval: number;
   tailLastBytes: number;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   log: ((...data: any) => unknown) | boolean;
 };
 export class SFTPTail extends EventEmitter<{
   connected: [void];
   disconnect: [void];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   error: [any];
   line: [string];
 }> {
-  protected client: Client;
+  protected client: any;
   options: SFTPTailOptions;
   filePath: string | null;
   fetchLoopActive: boolean;
   lastByteReceived: number | null;
   fetchLoopPromise: null | Promise<void>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   log: (...data: any) => unknown;
   tmpFilePath!: PathLike;
   constructor(options: Partial<SFTPTailOptions>) {
@@ -46,9 +45,6 @@ export class SFTPTail extends EventEmitter<{
       log: false,
       ...options,
     };
-
-    // Setup basic-ftp client.
-    this.client = new Client();
 
     // Setup logger.
     if (typeof this.options.log === 'function') {
@@ -68,6 +64,12 @@ export class SFTPTail extends EventEmitter<{
 
     this.fetchLoopActive = false;
     this.fetchLoopPromise = null;
+  }
+
+  async setup() {
+    const { default: Client } = await import('ssh2-sftp-client');
+    // Setup basic-ftp client.
+    this.client = new Client();
   }
 
   async watch(filePath: string) {
@@ -140,7 +142,6 @@ export class SFTPTail extends EventEmitter<{
           {
             readStreamOptions: {
               start: this.lastByteReceived,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } as any,
           },
         );
@@ -175,7 +176,6 @@ export class SFTPTail extends EventEmitter<{
         this.log(`Fetch loop took ${fetchTime}ms.`);
 
         await this.sleep(this.options.fetchInterval);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         this.emit('error', err);
         this.log(`Error in fetch loop: ${err.stack}`);
@@ -191,8 +191,7 @@ export class SFTPTail extends EventEmitter<{
   }
 
   async connect() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((this.client as any).sftp) return;
+    if (this.client.sftp) return;
 
     this.log('Connecting to SFTP server...');
     await this.client.connect(this.options.sftp);
@@ -201,8 +200,7 @@ export class SFTPTail extends EventEmitter<{
   }
 
   async disconnect() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (!(this.client as any).sftp) return;
+    if (!this.client.sftp) return;
 
     this.log('Disconnecting from SFTP server...');
     await this.client.end();
