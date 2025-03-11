@@ -1,37 +1,46 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import crypto from 'node:crypto';
 import EventEmitter from 'node:events';
 import fs, { PathLike } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import { Client, StringEncoding } from 'basic-ftp';
-
 export type FTPTailOptions = {
   ftp: {
     timeout: number;
-    encoding: StringEncoding;
+    encoding:
+      | 'base64'
+      | 'hex'
+      | 'binary'
+      | 'utf8'
+      | 'ascii'
+      | 'utf-8'
+      | 'utf16le'
+      | 'ucs2'
+      | 'ucs-2'
+      | 'latin1'
+      | undefined;
     host: string;
     port: number;
   };
   fetchInterval: number;
   tailLastBytes: number;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   log: ((...data: any) => unknown) | boolean;
 };
 export class FTPTail extends EventEmitter<{
   connected: [void];
   disconnect: [void];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   error: [any];
   line: [string];
 }> {
-  protected client: Client;
+  protected client: any;
   options: FTPTailOptions;
   filePath: string | null;
   fetchLoopActive: boolean;
   lastByteReceived: number | null;
   fetchLoopPromise: null | Promise<void>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   log: (...data: any) => unknown;
   tmpFilePath!: PathLike;
   constructor(options: Partial<FTPTailOptions>) {
@@ -45,11 +54,6 @@ export class FTPTail extends EventEmitter<{
       log: false,
       ...options,
     };
-
-    // Setup basic-ftp client.
-    this.client = new Client(this.options.ftp.timeout);
-    this.client.ftp.encoding =
-      this.options.ftp.encoding || this.client.ftp.encoding;
 
     // Setup logger.
     if (typeof this.options.log === 'function') {
@@ -69,6 +73,14 @@ export class FTPTail extends EventEmitter<{
 
     this.fetchLoopActive = false;
     this.fetchLoopPromise = null;
+  }
+
+  async setup() {
+    const { Client } = await import('basic-ftp');
+    // Setup basic-ftp client.
+    this.client = new Client(this.options.ftp.timeout);
+    this.client.ftp.encoding =
+      this.options.ftp.encoding ?? this.client.ftp.encoding;
   }
 
   async watch(filePath: string) {
@@ -171,7 +183,6 @@ export class FTPTail extends EventEmitter<{
         this.log(`Fetch loop took ${fetchTime}ms.`);
 
         await this.sleep(this.options.fetchInterval);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         this.emit('error', err);
         this.log(`Error in fetch loop: ${err.stack}`);
