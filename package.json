@@ -18,7 +18,7 @@
   "license": "MIT",
   "devDependencies": {
     "@eslint/eslintrc": "3.2.0",
-    "@eslint/js": "9.11.1",
+    "@eslint/js": "9.39.5",
     "@types/async": "^3.2.24",
     "@types/ini": "4.1.1",
     "@types/node": "20.17.14",
@@ -26,7 +26,7 @@
     "@types/tail": "^2.2.3",
     "@typescript-eslint/eslint-plugin": "8.7.0",
     "@typescript-eslint/parser": "8.7.0",
-    "eslint": "9.11.1",
+    "eslint": "9.39.5",
     "prettier": "3.3.3",
     "typedoc": "0.26.7",
     "typedoc-plugin-missing-exports": "3.0.0",
